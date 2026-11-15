@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Threes, tonight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF2F1; --sheet:#FFFFFF; --ink:#16212B; --soft:#5B6873; --faint:#A9B4BC; --rule:#D5DDDF;
+  --net:#0E7A68; --net-wash:#D9EEE8; --miss:#B4483A; --market:#16212B;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.45 "Archivo",system-ui,sans-serif;font-variation-settings:"wdth" 100}
+.num{font-variant-numeric:tabular-nums;font-variation-settings:"wdth" 82}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--net);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px 64px}
+header{padding:22px 0 10px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-weight:800;font-size:44px;line-height:.95;letter-spacing:-.01em;font-variation-settings:"wdth" 64}
+h1 small{display:block;font-size:15px;font-weight:500;letter-spacing:0;color:var(--soft);font-variation-settings:"wdth" 100;margin-top:6px}
+.tabs{display:flex;gap:4px;background:#DFE6E6;border-radius:999px;padding:4px}
+.tabs button{border:0;background:transparent;padding:7px 16px;border-radius:999px;cursor:pointer;font-weight:600}
+.tabs button[aria-selected=true]{background:var(--ink);color:#fff}
+.meta{color:var(--soft);font-size:13px;margin:0 0 14px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0 14px}
+.seg{display:inline-flex;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 14px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+select{border:1.5px solid var(--rule);background:var(--sheet);border-radius:8px;padding:6px 8px}
+.list{background:var(--sheet);border-radius:var(--r);overflow:hidden;box-shadow:0 0 0 1px var(--rule)}
+.row{display:grid;grid-template-columns:minmax(150px,1.5fr) 92px minmax(170px,2fr) 110px 70px;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--rule);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left}
+.row:first-child{border-top:0}
+.row:hover{background:#F6F9F8}
+.who b{display:block;font-weight:700;font-size:16px}
+.who span{color:var(--soft);font-size:13px}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:0 6px;border-radius:4px;background:#FDECC8;color:#7A4B00;margin-left:4px}
+.line{font-weight:700;font-size:17px}
+.line span{display:block;font-weight:500;font-size:12px;color:var(--soft)}
+/* the gap: model chance vs the market's chance on one track */
+.gap{position:relative;height:34px}
+.gap .track{position:absolute;left:0;right:0;top:15px;height:4px;background:#E4EAEA;border-radius:2px}
+.gap .fill{position:absolute;top:15px;height:4px;border-radius:2px;background:var(--net)}
+.gap .fill.neg{background:var(--miss)}
+.gap .m{position:absolute;top:8px;width:2px;height:18px;background:var(--market);border-radius:1px}
+.gap .d{position:absolute;top:10px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--net);border:2px solid #fff;box-shadow:0 0 0 1px var(--net)}
+.gap .d.neg{background:var(--miss);box-shadow:0 0 0 1px var(--miss)}
+.gap .lbl{position:absolute;top:-2px;font-size:11px;color:var(--soft);white-space:nowrap;transform:translateX(-50%)}
+.gap .lbl.mk{top:24px}
+.price{font-weight:700}
+.price span{display:block;font-weight:500;font-size:12px;color:var(--soft)}
+.edge{font-weight:800;font-size:17px;text-align:right}
+.edge.pos{color:var(--net)} .edge.neg{color:var(--faint)}
+.nolines .edge,.nolines .price{color:var(--faint);font-weight:500}
+.detail{display:none;border-top:1px dashed var(--rule);padding:14px 14px 18px;background:#FAFCFB}
+.detail.open{display:block;animation:open .18s ease-out}
+@keyframes open{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.detail.open{animation:none}}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.detail h3{margin:0 0 6px;font-size:15px;font-weight:700}
+.detail p{margin:0 0 6px;color:var(--soft)}
+table{border-collapse:collapse;width:100%}
+td,th{padding:4px 6px;text-align:right;font-variant-numeric:tabular-nums}
+th{font-weight:600;color:var(--soft);font-size:12px}
+td:first-child,th:first-child{text-align:left}
+tr+tr td{border-top:1px solid #EDF1F1}
+.best{background:var(--net-wash);border-radius:4px;font-weight:700}
+.big{font-size:34px;font-weight:800;line-height:1;font-variation-settings:"wdth" 70}
+.empty{padding:28px 16px;color:var(--soft)}
+.results .card{background:var(--sheet);border-radius:var(--r);box-shadow:0 0 0 1px var(--rule);padding:16px;margin-bottom:14px}
+.results h2{margin:0 0 10px;font-size:18px}
+.stat{display:inline-block;margin-right:28px;vertical-align:top}
+.stat span{display:block;color:var(--soft);font-size:13px}
+.win{color:var(--net);font-weight:700} .loss{color:var(--miss);font-weight:700}
+input[type=search]{border:1.5px solid var(--rule);background:var(--sheet);border-radius:8px;padding:6px 10px;min-width:160px}
+.ladder-wrap{overflow-x:auto}
+.ladder{min-width:640px}
+.ladder th{position:sticky;top:0;background:var(--sheet);padding:10px 8px;cursor:pointer;user-select:none;border-bottom:1px solid var(--rule);white-space:nowrap}
+.ladder th[aria-sort]{color:var(--ink)}
+.ladder td{padding:8px;vertical-align:top}
+.ladder td.pl{position:sticky;left:0;background:var(--sheet);min-width:170px}
+.ladder td.pl b{display:block;font-weight:700}
+.ladder td.pl span{color:var(--soft);font-size:12px}
+.ladder .c{font-weight:600}
+.ladder .c small{display:block;font-weight:500;font-size:11px;color:var(--faint)}
+.ladder .c small.edge-on{color:var(--net);font-weight:700}
+.ladder .c.lo{color:var(--faint);font-weight:400}
+@media (max-width:720px){
+  h1{font-size:36px}
+  .row{grid-template-columns:1fr auto;grid-template-areas:"who edge" "line price" "gap gap";row-gap:6px}
+  .who{grid-area:who}.edge{grid-area:edge}.line{grid-area:line}.price{grid-area:price;text-align:right}.gap{grid-area:gap}
+  .line span,.price span{display:inline;margin-left:6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Threes, tonight<small id="sub">Loading…</small></h1>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="tonight">Tonight</button>
+      <button role="tab" aria-selected="false" data-tab="ladder">Ladder</button>
+      <button role="tab" aria-selected="false" data-tab="results">Results</button>
+    </div>
+  </header>
+  <main id="tonight">
+    <p class="meta" id="meta"></p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Which lines">
+        <button aria-pressed="true" data-view="edges">Edges only</button>
+        <button aria-pressed="false" data-view="all">All lines</button>
+      </div>
+      <div class="seg" role="group" aria-label="Which side">
+        <button aria-pressed="true" data-side="">All</button>
+        <button aria-pressed="false" data-side="Over">Overs</button>
+        <button aria-pressed="false" data-side="Under">Unders</button>
+      </div>
+      <select id="book" aria-label="Book"><option value="">All books (best price)</option></select>
+      <select id="game" aria-label="Game"><option value="">All games</option></select>
+      <input id="search" type="search" placeholder="Find a player" aria-label="Find a player">
+      <select id="sort" aria-label="Sort">
+        <option value="ev">Sort by edge</option>
+        <option value="model">Sort by model chance</option>
+        <option value="mu">Sort by projection</option>
+        <option value="tip">Sort by tip-off</option>
+      </select>
+    </div>
+    <div class="list" id="list"></div>
+  </main>
+  <main id="ladder" hidden>
+    <p class="meta">Every player's chance at every line, if he plays. Where a book offers the line, its best price sits under the chance; green means the model sees an edge there. Players projected under 0.4 threes are hidden unless a book lists them; search finds anyone.</p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Side">
+        <button aria-pressed="true" data-lside="Over">Over</button>
+        <button aria-pressed="false" data-lside="Under">Under</button>
+      </div>
+      <div class="seg" role="group" aria-label="Show">
+        <button aria-pressed="true" data-lshow="chance">Chance</button>
+        <button aria-pressed="false" data-lshow="fair">Fair odds</button>
+      </div>
+      <select id="lgame" aria-label="Game"><option value="">All games</option></select>
+      <input id="lsearch" type="search" placeholder="Find a player" aria-label="Find a player">
+    </div>
+    <div class="list ladder-wrap"><table class="ladder" id="ltable"></table></div>
+  </main>
+  <main id="results" class="results" hidden></main>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const pct = (x, d=0) => x == null ? "–" : (100*x).toFixed(d) + "%";
+const am = a => a == null ? "–" : (a > 0 ? "+" + a : "" + a);
+const sgn = (x, d=1) => (x >= 0 ? "+" : "") + x.toFixed(d);
+const TYPE = {C3:"Corner 3s", CS:"Above-the-break catch-and-shoot", PU:"Above-the-break pull-ups"};
+let B = null, R = null, view = "edges", side = "", book = "";
+try { view = localStorage.getItem("b2-view") || "edges"; side = localStorage.getItem("b2-side") || ""; book = localStorage.getItem("b2-book") || ""; } catch(e) {}
+const dec = a => 1 + (a > 0 ? a/100 : 100/-a);
+const save = (k, v) => { try { localStorage.setItem(k, v); } catch(e) {} };
+
+function items() {
+  const out = [];
+  const gameTip = {}; (B.games||[]).forEach(g => gameTip[g.key] = g);
+  for (const r of B.rows) {
+    if (r.lines && r.lines.length) {
+      for (const ln of r.lines) {
+        const cands = [];
+        for (const s of ln.sides) {
+          if (side && s.side !== side) continue;
+          let price, books, market;
+          if (book) {
+            const b = ln.books.find(x => x.book === book);
+            if (!b) continue;
+            price = s.side === "Over" ? b.over : b.under;
+            if (price == null) continue;
+            books = [book];
+            market = b.novig_over != null ? (s.side === "Over" ? b.novig_over : 1 - b.novig_over) : null;
+          } else { price = s.best; books = s.best_books; market = s.market; }
+          cands.push({...s, price, books, market, ev: s.model * dec(price) - 1});
+        }
+        cands.sort((a,b) => b.ev - a.ev);
+        if (cands[0]) out.push({r, ln, s:cands[0], ev:cands[0].ev, g:gameTip[r.game]});
+      }
+    } else if (!book) out.push({r, ln:null, s:null, ev:-9, g:gameTip[r.game]});
+  }
+  return out;
+}
+
+function gapBar(s) {
+  const m = s.model, k = s.market, x = v => Math.max(1, Math.min(99, v*100));
+  let h = '<div class="gap" aria-hidden="true"><div class="track"></div>';
+  if (k != null) {
+    const lo = Math.min(m,k), hi = Math.max(m,k), neg = m < k;
+    h += `<div class="fill${neg?" neg":""}" style="left:${x(lo)}%;width:${x(hi)-x(lo)}%"></div>`;
+    h += `<div class="m" style="left:${x(k)}%"></div><div class="lbl mk" style="left:${x(k)}%">market ${pct(k)}</div>`;
+  }
+  h += `<div class="d${k!=null && m<k?" neg":""}" style="left:${x(m)}%"></div><div class="lbl" style="left:${x(m)}%">model ${pct(m)}</div></div>`;
+  return h;
+}
+
+function rowHTML(it, i) {
+  const {r, ln, s, g} = it;
+  const tip = g ? (g.locked ? "locked" : g.tip) : "";
+  const st = r.status && !["not listed"].includes(r.status) ? `<span class="tag">${r.status}</span>` : "";
+  const who = `<div class="who"><b>${r.name}${st}</b><span>${r.team} ${r.team===g?.home?"vs":"at"} ${r.opp}, ${tip}</span></div>`;
+  if (!s) return `<button class="row nolines" data-i="${i}" aria-expanded="false">${who}
+    <div class="line num">${r.mu.toFixed(1)}<span>projected</span></div><div class="gap"></div>
+    <div class="price">No line</div><div class="edge num">–</div></button>`;
+  return `<button class="row" data-i="${i}" aria-expanded="false">${who}
+    <div class="line num">${s.side} ${ln.line}<span>proj ${r.mu.toFixed(1)}</span></div>
+    ${gapBar(s)}
+    <div class="price num">${am(s.price)}<span>${s.books.join(", ")}</span></div>
+    <div class="edge num ${s.ev>=0?"pos":"neg"}">${sgn(100*s.ev,1)}%</div></button>`;
+}
+
+function detailHTML(it) {
+  const r = it.r, g = it.g, team = g?.teams?.[r.team] || {};
+  const chances = r.p.slice(0,6).map((p,k) => `<tr><td>${k+1}+ threes (over ${k}.5)</td><td>${pct(p)}</td><td>${fair(p)}</td></tr>`).join("");
+  const outs = team.out?.length ? `Out tonight: ${team.out.join(", ")}.` : "No regulars out tonight.";
+  const sw = r.swings.length ? `<table><tr><th>Teammate</th><th>Plays</th><th>If he sits</th></tr>${r.swings.map(x =>
+      `<tr><td>${x.name} <span class="tag">${x.status}</span></td><td>${pct(x.p_play)}</td><td>${sgn(x.if_sits,2)} threes</td></tr>`).join("")}</table>
+      <p style="margin-top:6px">The projection blends these by how likely each is to play.</p>` : "";
+  const types = Object.entries(r.types).map(([t,v]) => {
+      const d = v.def, dtxt = t === "PU" ? "shooter decides" : (Math.abs(d-1) < .02 ? "average" : `${d>1?"allows":"takes away"} ${Math.abs(Math.round((d-1)*100))}%`);
+      return `<tr><td>${TYPE[t]}</td><td>${v.att.toFixed(1)}</td><td>${dtxt}</td><td>${pct(v.make,1)}</td></tr>`; }).join("");
+  const se = r.season;
+  const lines = (r.lines||[]).map(ln => {
+    const books = ln.books.map(b => `<tr><td>${b.book}</td><td class="${ln.sides.find(s=>s.side==="Over")?.best_books.includes(b.book)?"best":""}">${am(b.over)}</td><td class="${ln.sides.find(s=>s.side==="Under")?.best_books.includes(b.book)?"best":""}">${am(b.under)}</td><td>${b.novig_over!=null?pct(b.novig_over):"–"}</td></tr>`).join("");
+    const sides = ln.sides.map(s => `${s.side}: model ${pct(s.model)} (fair ${am(s.fair)}), best ${am(s.best)}, edge ${sgn(100*s.ev,1)}%`).join("<br>");
+    return `<h3 style="margin-top:12px">Line ${ln.line}</h3><table><tr><th>Book</th><th>Over</th><th>Under</th><th>Over, no margin</th></tr>${books}</table><p style="margin-top:6px">${sides}</p>`;
+  }).join("");
+  return `<div class="dgrid">
+    <div><h3>Projection</h3><div class="big num">${r.mu.toFixed(2)}</div><p>threes, if he plays</p>
+      <table><tr><th></th><th>Chance</th><th>Fair odds</th></tr>${chances}</table></div>
+    <div><h3>Minutes</h3><p><b class="num">${r.min.toFixed(1)}</b> projected (normal role ${isNaN(r.base_min)?"–":r.base_min.toFixed(1)}). ${outs}</p>${sw}</div>
+    <div><h3>Shots vs ${r.opp}</h3><table><tr><th>Type</th><th>Att</th><th>${r.opp}</th><th>Makes</th></tr>${types}</table>
+      <p style="margin-top:6px">${r.att.toFixed(1)} threes expected. Shooting skill ${r.skill>=1?"+":""}${Math.round((r.skill-1)*100)}% vs league on the same shots.</p></div>
+    <div><h3>This season</h3><p class="num">${se.gp} games, ${se.fg3m ?? "–"} made on ${se.fg3a ?? "–"} tries a game (${pct(se.pct,1)}). Last 5: ${se.last5.join(", ")||"–"}.</p>${lines}</div>
+  </div>`;
+}
+function fair(p){ if(p<0.02||p>0.98) return "–"; return am(p>=.5? Math.round(-100*p/(1-p)) : Math.round(100*(1-p)/p)); }
+
+function render() {
+  if (!B) return;
+  const gsel = $("#game").value, sort = $("#sort").value, q = $("#search").value.trim().toLowerCase();
+  let its = items().filter(it => (!gsel || it.r.game === gsel) && (!q || it.r.name.toLowerCase().includes(q)));
+  // searching shows every line for the matching players, edge or not
+  if (view === "edges" && !q) its = its.filter(it => it.s && it.ev >= B.edge_min && it.s.model >= (B.min_chance ?? 0));
+  const key = {ev: it => -it.ev, model: it => -(it.s?.model ?? -1), mu: it => -it.r.mu,
+               tip: it => (it.g?.start || "") + String(9 - it.ev).padStart(6,"0")}[sort];
+  its.sort((a,b) => { const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : 0; });
+  const L = $("#list");
+  if (!its.length && q) { L.innerHTML = `<div class="empty">No player on tonight's slate matches "${q.replace(/</g,"&lt;")}"${book || side ? " with these filters" : ""}.</div>`; return; }
+  if (!its.length) {
+    L.innerHTML = `<div class="empty">${view === "edges" ? (B.books.length ? `No ${side ? side.toLowerCase() + " " : ""}line${book ? " at " + book : ""} clears a ${pct(B.edge_min)} edge right now. Switch to All lines to see every price.` : "Book lines haven't been pulled yet today. They come in with the first run after 11 AM Central.") : "No players on tonight's slate yet."}</div>`;
+    return;
+  }
+  window._its = its;
+  L.innerHTML = its.map((it,i) => rowHTML(it,i) + `<div class="detail" id="d${i}"></div>`).join("");
+}
+
+$("#list").addEventListener("click", e => {
+  const b = e.target.closest(".row"); if (!b) return;
+  const i = +b.dataset.i, d = $("#d"+i), was = d.classList.contains("open");
+  document.querySelectorAll(".detail.open").forEach(x => x.classList.remove("open"));
+  document.querySelectorAll(".row[aria-expanded=true]").forEach(x => x.setAttribute("aria-expanded","false"));
+  if (!was) { d.innerHTML = detailHTML(window._its[i]); d.classList.add("open"); b.setAttribute("aria-expanded","true"); }
+});
+document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
+  view = b.dataset.view; try { localStorage.setItem("b2-view", view); } catch(e) {}
+  document.querySelectorAll("[data-view]").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); }));
+document.querySelectorAll("[data-side]").forEach(b => b.addEventListener("click", () => {
+  side = b.dataset.side; save("b2-side", side);
+  document.querySelectorAll("[data-side]").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); }));
+$("#book").addEventListener("change", () => { book = $("#book").value; save("b2-book", book); render(); });
+$("#game").addEventListener("change", render); $("#sort").addEventListener("change", render);
+$("#search").addEventListener("input", render);
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  ["tonight","ladder","results"].forEach(t => $("#"+t).hidden = b.dataset.tab !== t);
+  if (b.dataset.tab === "results") renderResults();
+  if (b.dataset.tab === "ladder") renderLadder(); }));
+
+let lside = "Over", lshow = "chance", lsort = {col: "mu", dir: -1};
+const LINES = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5];
+function renderLadder() {
+  if (!B) return;
+  const g = $("#lgame").value, q = $("#lsearch").value.trim().toLowerCase();
+  const gameTip = {}; (B.games||[]).forEach(x => gameTip[x.key] = x);
+  // players who rarely shoot threes are left out unless a book lists them or you search for them
+  let rows = B.rows.filter(r => (!g || r.game === g) && (q ? r.name.toLowerCase().includes(q) : (r.mu >= 0.4 || (r.lines||[]).length)));
+  const chance = (r, i) => lside === "Over" ? r.p[i] : 1 - r.p[i];
+  const val = (r, c) => c === "mu" ? r.mu : c === "name" ? r.name : chance(r, c);
+  rows.sort((a,b) => { const x = val(a, lsort.col), y = val(b, lsort.col); return (x < y ? -1 : x > y ? 1 : 0) * lsort.dir; });
+  const th = (c, label) => `<th data-col="${c}" ${lsort.col===c?`aria-sort="${lsort.dir>0?"ascending":"descending"}"`:""}>${label}${lsort.col===c?(lsort.dir>0?" ↑":" ↓"):""}</th>`;
+  let h = `<tr>${th("name","Player")}${th("mu","Proj")}${LINES.map((l,i)=>th(i, `${lside==="Over"?"Over":"Under"} ${l}`)).join("")}</tr>`;
+  for (const r of rows) {
+    const gm = gameTip[r.game];
+    const st = r.status && r.status !== "not listed" ? ` <span class="tag">${r.status}</span>` : "";
+    h += `<tr><td class="pl"><b>${r.name}${st}</b><span>${r.team} ${r.team===gm?.home?"vs":"at"} ${r.opp}${gm?.locked?", locked":""}</span></td><td class="num">${r.mu.toFixed(1)}</td>`;
+    LINES.forEach((l, i) => {
+      const p = chance(r, i);
+      const ln = (r.lines||[]).find(x => x.line === l), sd = ln?.sides.find(x => x.side === lside);
+      const book = sd ? `<small class="${sd.ev >= B.edge_min && sd.model >= (B.min_chance ?? 0) ? "edge-on" : ""}">${am(sd.best)} ${sd.best_books[0]}${sd.best_books.length>1?" +":""}</small>` : "";
+      const main = lshow === "chance" ? pct(p) : fair(p);
+      h += `<td class="c num ${p < 0.02 ? "lo" : ""}">${main}${book}</td>`;
+    });
+    h += `</tr>`;
+  }
+  $("#ltable").innerHTML = rows.length ? h : `<tr><td class="empty">No players match.</td></tr>`;
+}
+$("#ltable").addEventListener("click", e => {
+  const t = e.target.closest("th"); if (!t) return;
+  const c = isNaN(+t.dataset.col) ? t.dataset.col : +t.dataset.col;
+  lsort = {col: c, dir: lsort.col === c ? -lsort.dir : (c === "name" ? 1 : -1)}; renderLadder(); });
+document.querySelectorAll("[data-lside]").forEach(b => b.addEventListener("click", () => { lside = b.dataset.lside;
+  document.querySelectorAll("[data-lside]").forEach(x => x.setAttribute("aria-pressed", x === b)); renderLadder(); }));
+document.querySelectorAll("[data-lshow]").forEach(b => b.addEventListener("click", () => { lshow = b.dataset.lshow;
+  document.querySelectorAll("[data-lshow]").forEach(x => x.setAttribute("aria-pressed", x === b)); renderLadder(); }));
+$("#lgame").addEventListener("change", renderLadder); $("#lsearch").addEventListener("input", renderLadder);
+
+function renderResults() {
+  const el = $("#results");
+  if (!R || !R.nights) { el.innerHTML = `<div class="card"><h2>No graded nights yet</h2><p>Each night's lines are graded the next morning, once box scores are in. The first results show up after the first night with book lines.</p></div>`; return; }
+  const e = R.edges, a = R.all;
+  const stat = (v, l) => `<div class="stat"><div class="big num">${v}</div><span>${l}</span></div>`;
+  el.innerHTML = `
+  <div class="card"><h2>Edges of ${pct(R.edge_min)} or more</h2>
+    ${stat(`${e.wins}–${e.n-e.wins}`, "record")}${stat(sgn(e.units,1), "units at best price")}${stat(e.roi==null?"–":sgn(100*e.roi,1)+"%", "return per bet")}
+    <p style="margin-top:10px;color:var(--soft)">The model expected to win ${pct(e.exp_win)} of these; it won ${pct(e.act_win)}. ${R.nights} night${R.nights>1?"s":""} graded.</p></div>
+  <div class="card"><h2>By size of edge</h2><table><tr><th>Edge</th><th>Bets</th><th>Won</th><th>Model expected</th><th>Units</th><th>Return</th></tr>
+    ${R.buckets.filter(b=>b.n).map(b=>`<tr><td>${b.label}</td><td>${b.n}</td><td>${pct(b.act_win)}</td><td>${pct(b.exp_win)}</td><td>${sgn(b.units,1)}</td><td>${sgn(100*b.roi,1)}%</td></tr>`).join("")}</table>
+    <p style="margin-top:8px;color:var(--soft)">If the edges are real, bigger edges should return more, and the won column should track the expected column.</p></div>
+  <div class="card"><h2>Does X% mean X%?</h2><table><tr><th>Model said</th><th>Lines</th><th>Average</th><th>Actually hit</th></tr>
+    ${R.calibration.map(c=>`<tr><td>${c.bin}</td><td>${c.n}</td><td>${pct(c.pred)}</td><td>${pct(c.act)}</td></tr>`).join("")}</table></div>
+  <div class="card"><h2>Edge picks</h2><table><tr><th>Night</th><th>Player</th><th>Bet</th><th>Price</th><th>Edge</th><th>Made</th><th></th></tr>
+    ${R.picks.map(p=>`<tr><td>${p.GAME_DATE.slice(5)}</td><td>${p.PLAYER}</td><td>${p.SIDE} ${p.LINE}</td><td>${am(p.BEST)} ${p.BOOK}</td><td>${sgn(100*p.EV,1)}%</td><td>${p.FG3M ?? "–"}</td><td class="${p.RESULT}">${p.RESULT}</td></tr>`).join("")}</table></div>`;
+}
+
+Promise.all([fetch("data/board.json?t="+Date.now()).then(r => r.ok ? r.json() : null).catch(()=>null),
+             fetch("data/results.json?t="+Date.now()).then(r => r.ok ? r.json() : null).catch(()=>null)]).then(([b, r]) => {
+  B = b; R = r;
+  if (!B) { $("#sub").textContent = "No board built yet."; $("#list").innerHTML = '<div class="empty">The first build hasn\'t run yet.</div>'; return; }
+  const d = new Date(B.date + "T12:00:00");
+  $("#sub").textContent = d.toLocaleDateString("en-US", {weekday:"long", month:"long", day:"numeric"}) + `, ${B.games.length} game${B.games.length===1?"":"s"}`;
+  $("#meta").textContent = `Updated ${B.built}. ` + (B.odds_pulled ? `Book lines from ${B.books.join(", ")}, pulled ${B.odds_pulled.slice(11)} ET. ` : "Book lines not pulled yet. ") +
+     (B.injury_report_at ? `Injury report as of ${new Date(B.injury_report_at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"})}.` : "");
+  B.games.forEach(g => { for (const id of ["#game", "#lgame"]) { const o = document.createElement("option"); o.value = g.key; o.textContent = `${g.away} at ${g.home}, ${g.tip}`; $(id).appendChild(o); } });
+  document.querySelectorAll("[data-view]").forEach(x => x.setAttribute("aria-pressed", x.dataset.view === view));
+  document.querySelectorAll("[data-side]").forEach(x => x.setAttribute("aria-pressed", x.dataset.side === side));
+  (B.books || []).forEach(k => { const o = document.createElement("option"); o.value = k; o.textContent = k; $("#book").appendChild(o); });
+  if (book && !(B.books || []).includes(book)) book = "";
+  $("#book").value = book;
+  render();
+});
+</script>
+</body>
+</html>
